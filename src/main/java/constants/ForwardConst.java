@@ -24,6 +24,8 @@ public enum ForwardConst {
     CMD_EDIT("edit"),
     CMD_UPDATE("update"),
     CMD_DESTROY("destroy"),
+    CMD_DO_NICE("doNice"),
+    CMD_CANCL_NICE("cancelNice"),
 
     //jsp
     FW_ERR_UNKNOWN("error/unknown"),
@@ -57,5 +59,13 @@ public enum ForwardConst {
         return this.text;
     }
 
+    public static ForwardConst get(String key) {
+        for(ForwardConst c : values()) {
+            if(c.getValue().equals(key)){
+                return c;
+            }
+        }
+        return CMD_NONE;
+    }
 
 }

@@ -14,6 +14,10 @@ public enum MessageConst {
     I_UPDATED("更新が完了しました。"),
     I_DELETED("削除が完了しました。"),
 
+    //いいね
+    I_ADD_NICE("いいね！をしました。"),
+    I_SUB_NICE("いいね！を取り消しました。"),
+
     //バリデーション
     E_NONAME("氏名を入力してください。"),
     E_NOPASSWORD("パスワードを入力してください。"),

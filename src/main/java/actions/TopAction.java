@@ -11,6 +11,7 @@ import actions.views.ReportView;
 import constants.AttributeConst;
 import constants.ForwardConst;
 import constants.JpaConst;
+import services.NiceService;
 import services.ReportService;
 
 /**
@@ -20,6 +21,7 @@ import services.ReportService;
 public class TopAction extends ActionBase {
 
     private ReportService service;
+    private NiceService niceService;
 
     /**
      * indexメソッドを実行する
@@ -28,11 +30,13 @@ public class TopAction extends ActionBase {
     public void process() throws ServletException, IOException {
 
         service = new ReportService();
+        niceService = new NiceService();
 
         //メソッドを実行
         invoke();
 
         service.close();
+        niceService.close();
 
     }
 
@@ -52,12 +56,15 @@ public class TopAction extends ActionBase {
         //ログイン中の従業員が作成した日報データの件数を取得
         long myReportsCount = service.countAllMine(loginEmployee);
 
+        //リアクション数のリストを作成する
+        List<Long> nices = niceService.getAllCountNiceToReport(reports);
+
+        putRequestScope(AttributeConst.TOKEN,getTokenId());
         putRequestScope(AttributeConst.REPORTS, reports); //取得した日報データ
         putRequestScope(AttributeConst.REP_COUNT, myReportsCount); //ログイン中の従業員が作成した日報の数
         putRequestScope(AttributeConst.PAGE, page); //ページ数
         putRequestScope(AttributeConst.MAX_ROW, JpaConst.ROW_PER_PAGE); //1ページに表示するレコードの数
-
-        //↑ここまで追記
+        putRequestScope(AttributeConst.NICES,nices);            //リアクション数のリスト
 
         //セッションにフラッシュメッセージが設定されている場合はリクエストスコープに移し替え、セッションからは削除する
         String flush = getSessionScope(AttributeConst.FLUSH);

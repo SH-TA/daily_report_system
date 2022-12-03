@@ -39,6 +39,10 @@ public enum AttributeConst {
     DEL_FLAG_TRUE(1),
     DEL_FLAG_FALSE(0),
 
+    //いいねフラグ
+    NICE_FLAG_TRUE(1),
+    NICE_FLAG_FALSE(0),
+
     //日報管理
     REPORT("report"),
     REPORTS("reports"),
@@ -46,7 +50,13 @@ public enum AttributeConst {
     REP_ID("id"),
     REP_DATE("report_date"),
     REP_TITLE("title"),
-    REP_CONTENT("content_msg");
+    REP_CONTENT("content_msg"),
+
+    //いいね
+    NICE("nice"),
+    NICES("nices"),
+    NICE_COUNT("niceCount"),
+    NICE_MY_NICE_COUNT("myNiceCount");
 
     private final String text;
     private final Integer i;

@@ -26,6 +26,8 @@ public interface JpaConst {
     int ROLE_GENERAL = 0; //管理者権限OFF(一般)
     int EMP_DEL_TRUE = 1; //削除フラグON(削除済み)
     int EMP_DEL_FALSE = 0; //削除フラグOFF(現役)
+    int NICE_REP_TRUE = 1;  //日報のいいねフラグON
+    int NICE_REP_FALSE = 0; //日報のいいねフラグOFF
 
     //日報テーブル
     String TABLE_REP = "reports"; //テーブル名
@@ -38,14 +40,25 @@ public interface JpaConst {
     String REP_COL_CREATED_AT = "created_at"; //登録日時
     String REP_COL_UPDATED_AT = "updated_at"; //更新日時
 
+    //いいねテーブル
+    String TABLE_NICE = "nices"; //テーブル名
+    //いいねテーブルカラム
+    String NICE_COL_ID = "id"; //id
+    String NICE_COL_REP = "report_id"; //いいねをつけた日報のid
+    String NICE_COL_EMP = "employee_id"; //いいねをつけた従業員のid
+    String NICE_COL_NICE_FLAG = "nice_flag"; //いいねの状況
+    String NICE_COL_NICED_AT = "niced_at"; //いいねをした日時
+
     //Entity名
     String ENTITY_EMP = "employee"; //従業員
     String ENTITY_REP = "report"; //日報
+    String ENTITY_NICE = "nice"; //いいね
 
     //JPQL内パラメータ
     String JPQL_PARM_CODE = "code"; //社員番号
     String JPQL_PARM_PASSWORD = "password"; //パスワード
     String JPQL_PARM_EMPLOYEE = "employee"; //従業員
+    String JPQL_PARM_REPORT = "report";     //日報
 
     //NamedQueryの nameとquery
     //全ての従業員をidの降順に取得する
@@ -72,6 +85,17 @@ public interface JpaConst {
     //指定した従業員が作成した日報の件数を取得する
     String Q_REP_COUNT_ALL_MINE = ENTITY_REP + ".countAllMine";
     String Q_REP_COUNT_ALL_MINE_DEF = "SELECT COUNT(r) FROM Report AS r WHERE r.employee = :" + JPQL_PARM_EMPLOYEE;
-
+    //指定した日報についたいいねの件数を取得する
+    String Q_NICE_ALL_NICE_COUNT_TO_REPORT = ENTITY_NICE + ".countAllNiceToReport";
+    String Q_NICE_ALL_NICE_COUNT_TO_REPORT_DEF = "SELECT COUNT(r) FROM Nice As r WHERE r.report = :" + JPQL_PARM_REPORT + " AND r.niceFlag = 1";
+    //指定した日報に関する従業員のいいねデータの件数を取得する
+    String Q_NICE_COUNT_CREATED_MINE_NICE_DATA_TO_REPORT = ENTITY_NICE + ".countCreatedMineNiceDataToReport";
+    String Q_NICE_COUNT_CREATED_MINE_NICE_DATA_TO_REPORT_DEF = "SELECT COUNT(r) FROM Nice As r WHERE r.report = :" + JPQL_PARM_REPORT + " AND r.employee = :" + JPQL_PARM_EMPLOYEE;
+    //指定した日報に従業員が付けたいいねの件数を取得する
+    String Q_NICE_COUNT_MINE_NICE_TO_REPORT = ENTITY_NICE + ".countMineNiceToReport";
+    String Q_NICE_COUNT_MINE_NICE_TO_REPORT_DEF = "SELECT COUNT(r) FROM Nice As r WHERE r.report = :" + JPQL_PARM_REPORT + " AND r.employee = :" + JPQL_PARM_EMPLOYEE + " AND r.niceFlag = 1";
+    //指定した日報に従業員がつけたいいね情報を取得する
+    String Q_NICE_GET_MINE_NICE_TO_REPORT = ENTITY_NICE + ".getMineNiceToReport";
+    String Q_NICE_GET_MINE_NICE_TO_REPORT_DEF = "SELECT r FROM Nice As r WHERE r.report = :" + JPQL_PARM_REPORT + " AND r.employee = :" + JPQL_PARM_EMPLOYEE;
 
 }

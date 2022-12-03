@@ -13,6 +13,7 @@ import constants.AttributeConst;
 import constants.ForwardConst;
 import constants.JpaConst;
 import constants.MessageConst;
+import services.NiceService;
 import services.ReportService;
 
 /**
@@ -22,6 +23,7 @@ import services.ReportService;
 public class ReportAction extends ActionBase {
 
     private ReportService service;
+    private NiceService niceService;
 
     /**
      * メソッドを実行する
@@ -30,10 +32,13 @@ public class ReportAction extends ActionBase {
     public void process() throws ServletException, IOException {
 
         service = new ReportService();
+        niceService = new NiceService();
 
         //メソッドを実行
         invoke();
+
         service.close();
+        niceService.close();
     }
 
     /**
@@ -50,10 +55,14 @@ public class ReportAction extends ActionBase {
         //全日報データの件数を取得
         long reportsCount = service.countAll();
 
+        //いいね数のリストを作成する
+        List<Long> nices = niceService.getAllCountNiceToReport(reports);
+
         putRequestScope(AttributeConst.REPORTS, reports); //取得した日報データ
         putRequestScope(AttributeConst.REP_COUNT, reportsCount); //全ての日報データの件数
         putRequestScope(AttributeConst.PAGE, page); //ページ数
         putRequestScope(AttributeConst.MAX_ROW, JpaConst.ROW_PER_PAGE); //1ページに表示するレコードの数
+        putRequestScope(AttributeConst.NICES,nices);            //いいね数のリスト
 
         //セッションにフラッシュメッセージが設定されている場合はリクエストスコープに移し替え、セッションからは削除する
         String flush = getSessionScope(AttributeConst.FLUSH);
@@ -160,9 +169,26 @@ public class ReportAction extends ActionBase {
 
             putRequestScope(AttributeConst.REPORT, rv); //取得した日報データ
 
-            //詳細画面を表示
-            forward(ForwardConst.FW_REP_SHOW);
         }
+
+        //セッションからログイン中の従業員情報を取得
+        EmployeeView ev = (EmployeeView) getSessionScope(AttributeConst.LOGIN_EMP);
+
+        //日報閲覧時にいいねテーブルが作られていない場合は作成する
+        if(niceService.countCreatedMineNiceDataToReport(rv, ev) != 1) {
+            niceService.create(rv, ev);
+        }
+        long niceCount = niceService.countAllNiceToReport(rv);
+        long myNiceCount = niceService.countMineNiceToReport(rv, ev);
+
+        putRequestScope(AttributeConst.TOKEN,getTokenId());
+        putRequestScope(AttributeConst.NICE_COUNT,niceCount); //日報についたいいね数
+        putRequestScope(AttributeConst.NICE_MY_NICE_COUNT,myNiceCount);  //自分が日報につけたいいねの数
+
+        //詳細画面を表示
+        forward(ForwardConst.FW_REP_SHOW);
+
+
     }
 
     /**
@@ -234,6 +260,51 @@ public class ReportAction extends ActionBase {
                 redirect(ForwardConst.ACT_REP, ForwardConst.CMD_INDEX);
 
             }
+        }
+    }
+
+    /**
+     * 日報にいいねをする
+     * @param reportService
+     * @throws ServletException
+     * @throws IOException
+     */
+    public void doNice() throws ServletException,IOException{
+
+        //CSRF対策
+        if(checkToken()) {
+            int id = Integer.parseInt(getRequestParam(AttributeConst.REP_ID));
+            ReportView rv = service.findOne(id);
+            EmployeeView ev = getSessionScope(AttributeConst.LOGIN_EMP);
+            //いいねを行い、完了した場合フラッシュメッセージを設定
+            if(niceService.doNice(rv, ev)) {
+                putRequestScope(AttributeConst.FLUSH,MessageConst.I_ADD_NICE.getMessage());
+            }
+
+            //詳細画面の呼び出し処理
+            show();
+        }
+    }
+
+    /**
+     * 日報についたいいねを取り消す
+     * @throws ServletException
+     * @throws IOException
+     */
+    public void cancelNice() throws ServletException,IOException{
+
+        //CSRF対策
+        if(checkToken()) {
+            int id = Integer.parseInt(getRequestParam(AttributeConst.REP_ID));
+            ReportView rv = service.findOne(id);
+            EmployeeView ev = getSessionScope(AttributeConst.LOGIN_EMP);
+            //いいねを取り消し、完了した場合フラッシュメッセージを設定
+            if(niceService.cancelNice(rv, ev)) {
+                putRequestScope(AttributeConst.FLUSH,MessageConst.I_SUB_NICE.getMessage());
+            }
+
+            //詳細画面の呼び出し処理
+            show();
         }
     }
 
